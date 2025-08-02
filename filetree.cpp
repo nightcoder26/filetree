@@ -1,22 +1,9 @@
-#define BOLDBLACK "\033[1m\033[30m"   /* Bold Black */
-#define BOLDRED "\033[1m\033[31m"     /* Bold Red */
-#define BOLDGREEN "\033[1m\033[32m"   /* Bold Green */
-#define BOLDYELLOW "\033[1m\033[33m"  /* Bold Yellow */
-#define BOLDBLUE "\033[1m\033[34m"    /* Bold Blue */
-#define BOLDMAGENTA "\033[1m\033[35m" /* Bold Magenta */
-#define BOLDCYAN "\033[1m\033[36m"    /* Bold Cyan */
-#define BOLDWHITE "\033[1m\033[37m"   /* Bold White */
+#define BOLDYELLOW "\033[1m\033[33m" /* Bold Yellow */
+#define BOLDBLUE "\033[1m\033[34m"   /* Bold Blue */
 #define RESET "\033[0m"
-#define BLACK "\033[30m"   /* Black */
-#define RED "\033[31m"     /* Red */
-#define GREEN "\033[32m"   /* Green */
-#define YELLOW "\033[33m"  /* Yellow */
-#define BLUE "\033[34m"    /* Blue */
 #define MAGENTA "\033[35m" /* Magenta */
-#define CYAN "\033[36m"    /* Cyan */
-#define WHITE "\033[37m"   /* White */
-
 #include <iostream>
+#include <vector>
 #include <filesystem>
 using namespace std;
 
@@ -34,12 +21,19 @@ void print_file_tree(const filesystem::path &path, string prefix = "")
 {
     vector<filesystem::directory_entry> entries;
 
-    for (auto it = filesystem::directory_iterator(path); it != filesystem::directory_iterator(); it++)
+    for (const auto &entry : filesystem::directory_iterator(path))
     {
-        auto name = it->path().filename().string();
-        int lastfile = 0;
+        entries.push_back(entry);
+    }
 
-        if (next(it) == filesystem::directory_iterator())
+    for (long long i = 0; i < entries.size(); ++i)
+    {
+        auto &entry = entries[i];
+
+        int lastfile = 0;
+        string name = entry.path().filename().string();
+
+        if (i == entries.size() - 1)
         {
             lastfile = 1;
         }
@@ -64,7 +58,7 @@ void print_file_tree(const filesystem::path &path, string prefix = "")
             start = prefix + "| ";
         }
         string colour;
-        if (it->is_directory())
+        if (entry.is_directory())
         {
             colour = BOLDBLUE;
         }
@@ -79,9 +73,13 @@ void print_file_tree(const filesystem::path &path, string prefix = "")
 
         cout << prefix << symbol1 << colour << name << RESET << endl;
 
-        if (it->is_directory())
+        if (entry.is_directory())
         {
-            print_file_tree(it->path(), start);
+            string folder_name = entry.path().filename().string();
+            if (!folder_name.empty() && folder_name[0] != '.')
+            {
+                print_file_tree(entry.path(), start);
+            }
         }
     }
 }
